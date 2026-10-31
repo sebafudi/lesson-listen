@@ -2,7 +2,13 @@
 
 A Chrome extension that makes the lesson audio player on `hq.mega.dev` easier to read along with: skip buttons, clickable timestamps in the text, and a tracking mode that follows the audio. Exact word timings come from a Parakeet speech-to-text model running locally.
 
-<!-- media -->
+<p align="center"><img src="https://github.com/sebafudi/lesson-listen/releases/download/media/demo.gif" alt="Skip buttons, Parakeet sync and tracking in the lesson player" width="800"></p>
+
+<p align="center"><a href="https://github.com/sebafudi/lesson-listen/releases/download/media/demo.mp4">Watch with sound (MP4)</a> · the lesson shown is made up</p>
+
+| Skip | Sync | Tracking |
+| --- | --- | --- |
+| <img src="https://github.com/sebafudi/lesson-listen/releases/download/media/skip.png" alt="Skip buttons next to Play"> | <img src="https://github.com/sebafudi/lesson-listen/releases/download/media/sync.png" alt="Timestamps synced with Parakeet"> | <img src="https://github.com/sebafudi/lesson-listen/releases/download/media/tracking.png" alt="Spoken word highlighted while tracking"> |
 
 ## Features
 
@@ -14,16 +20,43 @@ A Chrome extension that makes the lesson audio player on `hq.mega.dev` easier to
 
 ## Install
 
-1. Native host (needs `uv` and `ffmpeg`, Apple Silicon for `parakeet-mlx`):
+Requirements: Chrome (or Chromium, Brave, Arc). For **Sync with Parakeet** also macOS on Apple Silicon, [`uv`](https://docs.astral.sh/uv/) and `ffmpeg` (`brew install uv ffmpeg`). Without the host everything works with estimated timestamps.
+
+1. Get the code and keep the folder where it is (the host is registered by its path; if you move the folder, run `install.sh` again):
+   ```sh
+   git clone https://github.com/sebafudi/lesson-listen.git
+   cd lesson-listen
+   ```
+2. Load the extension: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and select the `extension/` folder.
+3. Optional, for exact timestamps, register the local speech-to-text host:
    ```sh
    ./host/install.sh
    ```
-   It registers `dev.lesson_listen.stt` for Chrome/Chromium/Brave/Arc and warms up the Python env.
-2. Chrome → `chrome://extensions` → Developer mode → **Load unpacked** → select `extension/`.
-   The manifest pins the extension ID to `pidekogefiadecbjdbkfejdiigkjdomj`, which the host manifest allows.
-3. Open a lesson, expand the player, click **Sync with Parakeet** once per lesson.
+4. Open a lesson and expand the player. The skip buttons and estimated timestamps are there right away. Click **Sync with Parakeet** once per lesson; the first sync downloads the model (about 1.2 GB).
 
-The first sync downloads the model (about 1.2 GB) into `~/.cache/huggingface`. Each sync starts a fresh host process that exits when it is done, so the model does not stay in memory. Host logs: `$TMPDIR/lesson-listen-host.log`.
+The extension icon opens the settings: shortcuts, skip buttons per player state, tracking style, model, host status and stored transcripts.
+
+## What runs where
+
+- **In the browser**: everything except transcription. Settings live in `chrome.storage.sync`, transcripts in `chrome.storage.local`.
+- **On your machine**: only `host/stt_host.py`, started by Chrome through native messaging when you click **Sync** (and for a quick status check when the settings page opens or a sync starts). It receives the lesson audio, writes it to a temp file, transcribes it, returns word timings, deletes the file and exits. No background process, no server, no open port. Only this extension's ID may start it.
+- **On disk**: the model in `~/.cache/huggingface`, Python packages in uv's cache, a log at `$TMPDIR/lesson-listen-host.log`, and one small `dev.lesson_listen.stt.json` per browser in its `NativeMessagingHosts` folder.
+
+## Uninstall
+
+1. Remove **Lesson Listen** in `chrome://extensions`. This also deletes its settings and stored transcripts.
+2. Unregister the host (removes the `NativeMessagingHosts` entries):
+   ```sh
+   ./host/uninstall.sh
+   ```
+3. Optional, free the disk space:
+   ```sh
+   rm -rf ~/.cache/huggingface/hub/models--mlx-community--parakeet-tdt-0.6b-v2 \
+          ~/.cache/huggingface/hub/models--mlx-community--parakeet-tdt-0.6b-v3
+   rm -f "$TMPDIR/lesson-listen-host.log"
+   uv cache prune
+   ```
+4. Delete the `lesson-listen` folder.
 
 ## Development
 
@@ -55,6 +88,7 @@ host/
   stt_host.py          parakeet-mlx transcription, native messaging protocol
   run.sh               entry point Chrome launches
   install.sh / uninstall.sh
+  targets.sh           browser folders both scripts use
 ```
 
 ## How syncing works
