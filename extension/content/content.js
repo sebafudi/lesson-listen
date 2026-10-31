@@ -8,14 +8,17 @@
   const STORAGE_VERSION = 1;
   const MIN_TIMESTAMP_WORDS = 4;
   const FOLLOW_ANCHOR = 0.38;
-  const PARAGRAPH_TARGET = 0.05;
-  const PARAGRAPH_SETTLED = [-0.01, 0.1];
-  const LINE_LIMIT = 0.88;
+  const PARAGRAPH_TARGET = 0.1;
+  const PARAGRAPH_SETTLED = [0.05, 0.16];
+  const LINE_LIMIT = 0.8;
+  const LINE_URGENT = 0.93;
+  const OVERFLOW_TARGET = 0.3;
+  const DOCK_INSET_FALLBACK = 62;
   const RESUME_UP_ALLOWANCE = 0.5;
   const RESUME_DOWN_ALLOWANCE = 1;
   const PARAGRAPH_LEAD_SECONDS = 0.35;
   const SILENCE_GAP = 0.28;
-  const OVERFLOW_FALLBACK_MS = 3000;
+  const OVERFLOW_FALLBACK_MS = 1500;
   const SCROLL_STOP_MIN_WORDS = 8;
   const SMOOTH_TIME_CONSTANT_MS = 650;
   const STAGE_LABELS = {
@@ -353,6 +356,7 @@
       const onState = () => {
         this.update(true);
         if (!this.audio.paused) this.startLoop();
+        this.renderFade();
       };
       for (const type of ["play", "pause", "seeked", "timeupdate", "loadedmetadata"]) {
         this.audio.addEventListener(type, onState);
@@ -409,6 +413,16 @@
       this.cleanups.push(() => this.prose.removeEventListener("click", onClick, true));
     }
 
+    renderFade() {
+      if (!this.fade) {
+        this.fade = el("div", { class: "ll-fade", "aria-hidden": "true" });
+        document.body.append(this.fade);
+        this.cleanups.push(() => this.fade.remove());
+      }
+      const visible = settings.trackingEnabled && settings.trackingStyle !== "smooth" && !this.audio.paused && !this.followPausedByUser;
+      this.fade.classList.toggle("ll-fade-on", visible);
+    }
+
     applySettings() {
       this.prose.classList.toggle("ll-hide-ts", !settings.showTimestamps);
       this.renderSkipButtons();
@@ -442,6 +456,7 @@
         button.classList.toggle("ll-paused", paused);
         button.dataset.llLabel = title;
       }
+      this.renderFade();
     }
 
     async disableTracking() {
@@ -527,19 +542,17 @@
       return t > this.tokenEnds[this.activeToken] && next !== undefined && next - this.tokenEnds[this.activeToken] >= SILENCE_GAP;
     }
 
-    /** The visible reading area, excluding the docked player and any fixed header at the top. */
+    /**
+     * The visible reading area. The top always reserves the docked bar's height, docked or not,
+     * so a paragraph lands at the same place before and after the player docks.
+     */
     readingBand() {
-      let top = 0;
-      for (const node of [this.section, document.querySelector(".site-header")]) {
-        if (!node) continue;
-        const position = getComputedStyle(node).position;
-        const docked = node === this.section ? "stuck" in node.dataset : position === "fixed" || position === "sticky";
-        if (!docked) continue;
-        const rect = node.getBoundingClientRect();
-        if (rect.top <= 1 && rect.bottom > top) top = rect.bottom;
+      if ("stuck" in this.section.dataset && !("expanded" in this.section.dataset)) {
+        const bottom = this.section.getBoundingClientRect().bottom;
+        if (bottom > 0 && bottom < window.innerHeight * 0.3) this.dockInset = bottom;
       }
+      const top = this.dockInset ?? DOCK_INSET_FALLBACK;
       const bottom = window.innerHeight;
-      top = Math.min(top, bottom * 0.6);
       return { top, height: bottom - top, at: (fraction) => top + (bottom - top) * fraction };
     }
 
@@ -552,8 +565,8 @@
       const target = band.at(PARAGRAPH_TARGET);
       if (!rect || y === null) return window.scrollY + (y ?? target) - target;
       const lineBelowTop = Math.max(0, y - rect.top);
-      const anchorTop = target + lineBelowTop > band.at(LINE_LIMIT) ? y : rect.top;
-      return window.scrollY + anchorTop - target;
+      if (target + lineBelowTop > band.at(LINE_LIMIT)) return window.scrollY + y - band.at(OVERFLOW_TARGET);
+      return window.scrollY + rect.top - target;
     }
 
     /** A heading (and a short line right before a paragraph) scrolls together with the block it introduces. */
@@ -577,7 +590,11 @@
      * (well above it, or a full screen past it). Otherwise wait for the next paragraph and resume only
      * if that paragraph is clearly off screen.
      */
-    handleUserPause(band) {
+    /**
+     * Tracking stays paused while what is being read is comfortably on screen. It resumes when the
+     * next paragraph starts in the faded strip or off screen, or when the spoken line sinks into it.
+     */
+    handleUserPause(band, y) {
       const height = window.innerHeight;
       const active = this.blocks[this.activeBlock]?.el.getBoundingClientRect();
       if (active) {
@@ -589,11 +606,13 @@
         }
       }
       const upcoming = this.upcomingBlock();
-      if (upcoming === this.pausedAtBlock || !this.isScrollStop(upcoming)) return false;
+      let resume = y > band.at(LINE_URGENT);
+      if (!resume && upcoming !== this.pausedAtBlock && this.isScrollStop(upcoming)) {
+        const rect = this.blocks[upcoming].el.getBoundingClientRect();
+        resume = rect.top > band.at(LINE_LIMIT) || rect.bottom < band.top + 10;
+      }
+      if (!resume) return false;
       this.pausedAtBlock = upcoming;
-      const rect = this.blocks[upcoming].el.getBoundingClientRect();
-      const clearlyOffscreen = rect.top > height - 10 || rect.bottom < band.top + 10;
-      if (!clearlyOffscreen) return false;
       this.followPausedByUser = false;
       this.alignedBlock = -1;
       this.renderFollowState();
@@ -612,7 +631,7 @@
       if (y === null) return;
       const band = this.readingBand();
 
-      if (this.followPausedByUser && !this.handleUserPause(band)) return;
+      if (this.followPausedByUser && !this.handleUserPause(band, y)) return;
 
       if (settings.trackingStyle === "smooth") {
         const delta = y - band.at(FOLLOW_ANCHOR);
@@ -641,10 +660,10 @@
         return;
       }
       if (!this.pendingSince) this.pendingSince = now;
-      const offscreen = y < band.top || y > window.innerHeight;
-      if (offscreen || this.inSilence() || now - this.pendingSince > OVERFLOW_FALLBACK_MS) {
+      const urgent = y < band.top || y > band.at(LINE_URGENT);
+      if (urgent || this.inSilence() || now - this.pendingSince > OVERFLOW_FALLBACK_MS) {
         this.pendingSince = 0;
-        this.scrollTo(window.scrollY + y - band.at(PARAGRAPH_TARGET), now);
+        this.scrollTo(window.scrollY + y - band.at(OVERFLOW_TARGET), now);
       }
     }
 

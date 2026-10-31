@@ -381,3 +381,20 @@ h3.ll-block > .ll-ts {
 .lesson-audio-bar > :is(.lesson-audio-bar-play, .lesson-audio-toggle):is(:hover, :focus-visible) {
   z-index: 3;
 }
+
+.ll-fade {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 20vh;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--ll-bg) 55%, transparent));
+  opacity: 0;
+  transition: opacity 400ms;
+}
+
+.ll-fade.ll-fade-on {
+  opacity: 1;
+}

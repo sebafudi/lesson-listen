@@ -14,7 +14,7 @@ A Chrome extension that makes the lesson audio player on `hq.mega.dev` easier to
 
 - **Skip buttons**: ±10 s in the player and the docked bar, ±30 s in the player. Each location can show any of ±5, ±10, ±30.
 - **Timestamps in the text**: every paragraph, heading and diagram gets a clickable time. Estimated (`~4:51`) from the chapter times right away, exact (`4:51`) after **Sync with Parakeet**.
-- **Tracking**: scrolls between paragraphs as the audio moves on and highlights the spoken word. Scrolling yourself pauses it; it picks up again at the next paragraph.
+- **Tracking**: scrolls between paragraphs as the audio moves on and highlights the spoken word. Each paragraph lands at the same height near the top; paragraphs taller than the screen glide up at speech pauses before the spoken line reaches a faded strip at the bottom. Scrolling yourself pauses it; it picks up again at the next paragraph.
 - **Shortcuts**: `J`/`L` ±10 s, `←`/`→` ±5 s, `K` play/pause, `T` tracking. All configurable.
 - **Local and cached**: transcription runs on your machine and is stored per lesson in the browser. The model process exits after each sync.
 
