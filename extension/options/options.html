@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lesson Listen</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Lesson Listen</p>
+      <h1>Settings</h1>
+      <p class="lede">Applies to lesson audio on hq.mega.dev. Changes save instantly.</p>
+    </header>
+
+    <section>
+      <h2>Reading</h2>
+      <label class="toggle"><input type="checkbox" data-setting="showTimestamps"><span class="box"></span><span>Show timestamps next to the text</span></label>
+      <label class="toggle"><input type="checkbox" data-setting="highlightWords"><span class="box"></span><span>Highlight the spoken word (after sync)</span></label>
+      <label class="toggle"><input type="checkbox" data-setting="trackingEnabled"><span class="box"></span><span>Tracking: follow the audio while it plays</span></label>
+      <div class="field">
+        <span class="label">Tracking style</span>
+        <div class="segmented" role="radiogroup">
+          <label><input type="radio" name="trackingStyle" value="pauses"><span>At pauses</span></label>
+          <label><input type="radio" name="trackingStyle" value="smooth"><span>Smooth</span></label>
+        </div>
+        <p class="hint">At pauses scrolls only when the spoken line leaves the reading zone, waiting for a break in speech. Smooth keeps the spoken line at a fixed height. Scrolling yourself pauses tracking until the spoken line is back in view.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Skip buttons</h2>
+      <p class="hint">Which skip buttons appear in each player state.</p>
+      <div id="skip-buttons"></div>
+    </section>
+
+    <section>
+      <h2>Keyboard shortcuts</h2>
+      <label class="toggle"><input type="checkbox" data-setting="shortcutsEnabled"><span class="box"></span><span>Enable shortcuts</span></label>
+      <p class="hint">Click a key, then press the new combination. Backspace clears it, Escape cancels. Shortcuts are ignored while typing in a field.</p>
+      <div class="shortcuts" id="shortcuts"></div>
+      <button type="button" class="button ghost" id="reset-shortcuts">Reset to defaults</button>
+    </section>
+
+    <section>
+      <h2>Speech-to-text</h2>
+      <div class="field">
+        <span class="label">Model</span>
+        <div class="select"><select data-setting="model" id="model"></select></div>
+        <p class="hint">Runs locally through the native host (parakeet-mlx). The model downloads on first sync into the Hugging Face cache and the process exits after each sync, so nothing stays in memory.</p>
+      </div>
+      <div class="field">
+        <span class="label">Host</span>
+        <p class="host"><span class="dot" id="host-dot"></span><span id="host-status">Checking</span></p>
+        <button type="button" class="button ghost" id="host-check">Check again</button>
+      </div>
+      <div class="field">
+        <span class="label">Stored transcripts</span>
+        <p class="host" id="stored">-</p>
+        <button type="button" class="button ghost" id="clear-transcripts">Clear stored transcripts</button>
+      </div>
+    </section>
+  </main>
+  <script src="../shared/settings.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

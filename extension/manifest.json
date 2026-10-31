@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Lesson Listen",
+  "version": "0.1.0",
+  "description": "Skip buttons, text timestamps, local Parakeet sync and read-along tracking for MEGA.dev lesson audio.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxBFMBy45UB4x4czdVAyVr6yU7SEgxd2/XHjEgQBwrBo/3es0Z4/i86l5XQyhRi57fMWz2pquBOtwja0BP7wopTB+SbK4gdHVwzwKK37OT9jgwNTRNrW9fXFdEdC/9ioBCAqsq0K1GXGxe91OtAl8AT2Ll2hb060uQM2r1e5zq55yyN/mKOtYALtJt1u1lOhwLLAz6Nmldnl+jJtzxOjKh6U9KNJP2qW9iRBM2L+78u7B6lPifosoUE5ghZ4zludodtDWVD/Y9IiFDYk8M0mlrcpaaeHTE4Vfq+cvBmXZ+W196IT3Myf4m8iY+aP9B0acVCAearjcNpdkbQ+yq2OQBwIDAQAB",
+  "permissions": [
+    "storage",
+    "unlimitedStorage",
+    "nativeMessaging"
+  ],
+  "host_permissions": [
+    "https://hq.mega.dev/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://hq.mega.dev/*"
+      ],
+      "js": [
+        "shared/settings.js",
+        "content/timing.js",
+        "content/content.js"
+      ],
+      "css": [
+        "content/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Lesson Listen settings",
+    "default_popup": "options/options.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
+}

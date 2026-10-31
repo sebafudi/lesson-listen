@@ -1,0 +1,15 @@
+# Course content never lives in this repo: audio, transcripts and page dumps stay out.
+*.mp3
+*.m4a
+*.wav
+*.mp4
+*.webm
+transcripts/
+*.transcript.json
+lesson-dumps/
+
+*.pem
+*.crx
+.DS_Store
+__pycache__/
+.venv/

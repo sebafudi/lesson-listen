@@ -1,0 +1,383 @@
+:root {
+  --ll-bg: #050505;
+  --ll-fg: rgb(242, 242, 238);
+  --ll-text: rgb(217, 217, 212);
+  --ll-muted: rgb(166, 166, 175);
+  --ll-faint: rgb(110, 110, 118);
+  --ll-line: rgb(74, 74, 82);
+  --ll-red: #ff0000;
+  --ll-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+.ll-skip {
+  display: inline-flex;
+  flex: none;
+  align-self: stretch;
+}
+
+.ll-skip-btn {
+  min-width: 40px;
+  height: 44px;
+  padding: 0 6px;
+  margin: 0;
+  margin-left: -1px;
+  border: 1px solid var(--ll-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ll-muted);
+  font: 500 12px/1 var(--ll-mono);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms, background-color 120ms;
+}
+
+.ll-skip-btn:first-child {
+  margin-left: 0;
+}
+
+.ll-skip-btn:hover,
+.ll-skip-btn:focus-visible {
+  position: relative;
+  z-index: 1;
+  color: var(--ll-fg);
+  border-color: var(--ll-fg);
+  outline: none;
+}
+
+.ll-skip-btn:active {
+  background: var(--ll-fg);
+  color: var(--ll-bg);
+}
+
+.ll-skip-panel {
+  grid-column: 1 / -1;
+}
+
+@media (width >= 34rem) {
+  .lesson-audio-controls:has(> .ll-skip-panel) {
+    grid-template-columns: auto auto auto minmax(0, 1fr) auto auto auto;
+    grid-template-areas: "play skip now seek end speed download";
+  }
+
+  .ll-skip-panel {
+    grid-area: skip;
+  }
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar:has(> .ll-skip-bar) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar:has(> .ll-skip-bar):has(> .ll-track-bar) {
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+}
+
+.ll-track-bar {
+  display: none;
+}
+
+.lesson-audio[data-stuck] .ll-track-bar {
+  display: inline-flex;
+  position: relative;
+  z-index: 1;
+  height: var(--la-control, 44px);
+  margin-right: calc(-1 * var(--la-gap, 12px) - 1px);
+  border-color: var(--line-strong, var(--ll-line));
+}
+
+@container (width < 30rem) {
+  .ll-track-bar .ll-track-label {
+    display: none;
+  }
+}
+
+.ll-skip-bar {
+  display: none;
+}
+
+.lesson-audio[data-stuck] .ll-skip-bar {
+  display: inline-flex;
+  position: relative;
+  z-index: 1;
+  margin-left: calc(-1 * var(--la-gap, 12px) - 1px);
+}
+
+.ll-skip-bar .ll-skip-btn {
+  min-width: 44px;
+  height: var(--la-control, 44px);
+  border-color: var(--line-strong, var(--ll-line));
+  font-size: 11.5px;
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar-text {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar-chapter {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar-meta {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.lesson-audio[data-stuck] .lesson-audio-bar-meta::before {
+  content: "·";
+  color: var(--line-strong, var(--ll-line));
+}
+
+.ll-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 12px 0 0;
+  border-top: 1px dashed var(--ll-line);
+}
+
+.ll-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0;
+  color: var(--ll-muted);
+  font: 12.96px/1.4 var(--ll-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ll-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  background: var(--ll-faint);
+}
+
+.ll-row[data-state="synced"] .ll-dot { background: var(--ll-red); }
+.ll-row[data-state="busy"] .ll-dot { background: var(--ll-fg); animation: ll-blink 1s steps(2, start) infinite; }
+.ll-row[data-state="error"] .ll-dot { background: var(--ll-red); }
+.ll-row[data-state="error"] .ll-status-text { color: var(--ll-fg); text-transform: none; letter-spacing: 0; font-family: inherit; }
+
+@keyframes ll-blink {
+  to { visibility: hidden; }
+}
+
+.ll-progress {
+  position: relative;
+  flex: none;
+  width: 72px;
+  height: 2px;
+  background: var(--ll-line);
+}
+
+.ll-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--ll-progress, 0%);
+  background: var(--ll-red);
+  transition: width 200ms linear;
+}
+
+.ll-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.ll-btn,
+.ll-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ll-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ll-text);
+  font: 12px/1 var(--ll-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 120ms, border-color 120ms;
+}
+
+.ll-box {
+  width: 36px;
+  padding: 0;
+  color: var(--ll-muted);
+}
+
+.ll-btn:hover,
+.ll-box:hover,
+.ll-btn:focus-visible,
+.ll-box:focus-visible {
+  border-color: var(--ll-fg);
+  color: var(--ll-fg);
+  outline: none;
+}
+
+.ll-btn:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+
+.ll-check {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--ll-muted);
+}
+
+.ll-btn[aria-pressed="true"] .ll-check {
+  border-color: var(--ll-red);
+  background: var(--ll-red);
+}
+
+.ll-btn.ll-paused .ll-check {
+  background: transparent;
+  border-color: var(--ll-red);
+  border-style: dashed;
+}
+
+.ll-block {
+  position: relative;
+}
+
+.ll-ts {
+  position: absolute;
+  top: 0.32em;
+  right: calc(100% + 14px);
+  padding: 6px 8px;
+  margin: -6px 0;
+  border: 0;
+  background: none;
+  color: var(--ll-faint);
+  font: 11.5px/1.2 var(--ll-mono);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 0.75;
+  transition: color 120ms, opacity 120ms;
+  user-select: none;
+}
+
+h1.ll-block > .ll-ts,
+h2.ll-block > .ll-ts,
+h3.ll-block > .ll-ts {
+  top: 0.9em;
+}
+
+.ll-ts-estimated {
+  font-style: normal;
+}
+
+.ll-ts:hover,
+.ll-ts:focus-visible {
+  color: var(--ll-fg);
+  opacity: 1;
+  outline: none;
+}
+
+.ll-block.ll-active > .ll-ts {
+  color: var(--ll-red);
+  opacity: 1;
+}
+
+.ll-block::before {
+  content: "";
+  position: absolute;
+  top: 0.3em;
+  bottom: 0.3em;
+  left: -12px;
+  width: 2px;
+  background: transparent;
+  transition: background-color 200ms;
+}
+
+.ll-block.ll-active::before {
+  background: var(--ll-red);
+}
+
+.prose.ll-narrow .ll-ts {
+  position: static;
+  display: block;
+  margin: 0 0 2px;
+  float: none;
+}
+
+.prose.ll-narrow .ll-block::before {
+  left: -8px;
+}
+
+.prose.ll-hide-ts .ll-ts {
+  display: none;
+}
+
+::highlight(ll-word) {
+  background-color: rgba(255, 0, 0, 0.28);
+  color: #fff;
+}
+
+.ll-tip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2147483000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: 6px 8px;
+  border: 1px solid var(--ll-line);
+  background: var(--ll-bg);
+  color: var(--ll-text);
+  font: 12px/1.35 var(--ll-mono);
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+.ll-tip[data-visible] {
+  opacity: 1;
+}
+
+.ll-tip kbd {
+  flex: none;
+  padding: 1px 5px;
+  border: 1px solid var(--ll-line);
+  color: var(--ll-fg);
+  font: inherit;
+  font-size: 11px;
+}
+
+.lesson-audio .ll-skip-btn:hover,
+.lesson-audio .ll-skip-btn:focus-visible,
+.lesson-audio .ll-btn:hover,
+.lesson-audio .ll-btn:focus-visible,
+.lesson-audio .ll-box:hover,
+.lesson-audio .ll-box:focus-visible {
+  position: relative;
+  z-index: 2;
+  border-color: var(--ll-fg);
+  color: var(--ll-fg);
+  outline: none;
+}
+
+.lesson-audio-bar > :is(.lesson-audio-bar-play, .lesson-audio-toggle):is(:hover, :focus-visible) {
+  z-index: 3;
+}
