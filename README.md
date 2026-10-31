@@ -4,7 +4,7 @@ A Chrome extension that makes the lesson audio player on `hq.mega.dev` easier to
 
 <p align="center"><img src="https://github.com/sebafudi/lesson-listen/releases/download/media/demo.gif" alt="Skip buttons, Parakeet sync and tracking in the lesson player" width="800"></p>
 
-<p align="center"><a href="https://github.com/sebafudi/lesson-listen/releases/download/media/demo.mp4">Watch with sound (MP4)</a> · the lesson shown is made up</p>
+<p align="center"><sub>The lesson shown is made up.</sub></p>
 
 | Skip | Sync | Tracking |
 | --- | --- | --- |
